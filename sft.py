@@ -141,7 +141,7 @@ def create_datasets(dataset_name, split):
 
 if __name__ == "__main__":
     set_seed(42)
-    args = args_parse()
+    args = arg_parse()
 
     model = AutoModelForCausalLM.from_pretrained(
         args.model_name,
@@ -183,7 +183,7 @@ if __name__ == "__main__":
         gradient_checkpointing=args.gradient_checkpointing,
         learning_rate=args.learning_rate,
         logging_steps=args.logging_steps,
-        optim="paged_adamw_32bit",
+        optim="adamw_torch",
         evaluation_strategy="epoch" if eval_dataset else "no",
         save_strategy=args.save_strategy,
         save_steps=args.save_steps,
