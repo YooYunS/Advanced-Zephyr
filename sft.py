@@ -211,3 +211,14 @@ if __name__ == "__main__":
     )
 
     train_result = trainer.train()
+    
+    metrics = train_result.metrics
+    trainer.log_metrics("train", metrics)
+
+    Accelerator.wait_for_everyone()
+
+    # if Accelerator.is_main_process:
+    #     trainer.model.push_to_hub(args.hf_hub_path)
+    #     trainer.tokenizer.push_to_hub(args.hf_hub_path)
+
+    trainer.save_model(args.output_dir)
