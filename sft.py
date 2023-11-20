@@ -146,7 +146,7 @@ if __name__ == "__main__":
 
     model = AutoModelForCausalLM.from_pretrained(
         args.model_name,
-        device_map={"": Accelerator().process_index},
+        # device_map={"": Accelerator().process_index},    # unavailable in deepspeed
         trust_remote_code=True,
         torch_dtype=torch.bfloat16,
         use_flash_attention_2=args.use_flash_attention,
