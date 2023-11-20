@@ -12,6 +12,7 @@ from datasets import load_dataset, Dataset
 import huggingface_hub
 from typing import Literal
 import re
+import random
 
 from trl import SFTTrainer
 
