@@ -131,7 +131,7 @@ def apply_template(dataset, tokenizer):
         if messages[0]["role"] != "system":
             messages.insert(0, {"role": "system", "content": ""})
         example["text"] = tokenizer.apply_chat_template(
-            messages, tokenize=False, add_generation_prompt=True if task == "generation" else False
+            messages, tokenize=False, add_generation_prompt=True
         )
         formatted_dataset.append(example)
 
