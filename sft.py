@@ -123,6 +123,20 @@ def apply_chat_template(
         )
     return example
 
+def apply_template(dataset, tokenizer):
+    formatted_dataset = []
+    for data in dataset:
+        messages = data["messages"]
+        # We add an empty system message if there is none
+        if messages[0]["role"] != "system":
+            messages.insert(0, {"role": "system", "content": ""})
+        example["text"] = tokenizer.apply_chat_template(
+            messages, tokenize=False, add_generation_prompt=True if task == "generation" else False
+        )
+        formatted_dataset.append(example)
+
+    return Dataset.from_list(formatted_dataset)
+
 def dataset_sampling(dataset, sample_size):
     random_indices = random.sample(range(len(dataset)), sample_size)
 
@@ -171,11 +185,14 @@ if __name__ == "__main__":
 
     train_dataset = create_datasets(args.dataset_name, args.train_split)
     # eval_dataset = create_datasets(args.dataset_name, args.test_split)
+
+    train_dataset = apply_template(train_dataset, tokenizer)
     
-    train_dataset = train_dataset.map(apply_chat_template, fn_kwargs={"tokenizer": tokenizer, "task": "sft"})
-    eval_dataset = eval_dataset.map(apply_chat_template, fn_kwargs={"tokenizer": tokenizer, "task": "sft"})
-    
-    print(f"Size of the train set: {len(train_dataset)}. Size of the validation set: {len(eval_dataset)}")
+    # train_dataset = train_dataset.map(apply_chat_template, fn_kwargs={"tokenizer": tokenizer, "task": "sft"})
+    # eval_dataset = eval_dataset.map(apply_chat_template, fn_kwargs={"tokenizer": tokenizer, "task": "sft"})
+
+    print(f"Size of the train set: {len(train_dataset)}.)
+    # print(f"Size of the train set: {len(train_dataset)}. Size of the validation set: {len(eval_dataset)}")
 
     training_args = TrainingArguments(
         output_dir=args.output_dir,
