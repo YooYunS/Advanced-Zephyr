@@ -144,6 +144,8 @@ if __name__ == "__main__":
     set_seed(42)
     args = arg_parse()
 
+    accelerator = Accelerator()
+
     model = AutoModelForCausalLM.from_pretrained(
         args.model_name,
         # device_map={"": Accelerator().process_index},    # unavailable in deepspeed
@@ -216,13 +218,13 @@ if __name__ == "__main__":
     metrics = train_result.metrics
     trainer.log_metrics("train", metrics)
 
-    Accelerator.wait_for_everyone()
-
     if trainer.is_fsdp_enabled:
         trainer.accelerator.state.fsdp_plugin.set_state_dict_type("FULL_STATE_DICT")
 
-    if Accelerator.is_main_process:
+    if accelerator.is_main_process:
         trainer.model.push_to_hub(args.hf_hub_path)
         trainer.tokenizer.push_to_hub(args.hf_hub_path)
+    
+    accelerator.wait_for_everyone()
 
     trainer.save_model(args.output_dir)
