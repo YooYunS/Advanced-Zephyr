@@ -218,8 +218,11 @@ if __name__ == "__main__":
 
     Accelerator.wait_for_everyone()
 
-    # if Accelerator.is_main_process:
-    #     trainer.model.push_to_hub(args.hf_hub_path)
-    #     trainer.tokenizer.push_to_hub(args.hf_hub_path)
+    if trainer.is_fsdp_enabled:
+        trainer.accelerator.state.fsdp_plugin.set_state_dict_type("FULL_STATE_DICT")
+
+    if Accelerator.is_main_process:
+        trainer.model.push_to_hub(args.hf_hub_path)
+        trainer.tokenizer.push_to_hub(args.hf_hub_path)
 
     trainer.save_model(args.output_dir)
