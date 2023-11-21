@@ -191,7 +191,7 @@ if __name__ == "__main__":
     # train_dataset = train_dataset.map(apply_chat_template, fn_kwargs={"tokenizer": tokenizer, "task": "sft"})
     # eval_dataset = eval_dataset.map(apply_chat_template, fn_kwargs={"tokenizer": tokenizer, "task": "sft"})
 
-    print(f"Size of the train set: {len(train_dataset)}.)
+    print(f"Size of the train set: {len(train_dataset)}.")
     # print(f"Size of the train set: {len(train_dataset)}. Size of the validation set: {len(eval_dataset)}")
 
     training_args = TrainingArguments(
