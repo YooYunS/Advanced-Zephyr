@@ -130,10 +130,10 @@ def apply_template(dataset, tokenizer):
         # We add an empty system message if there is none
         if messages[0]["role"] != "system":
             messages.insert(0, {"role": "system", "content": ""})
-        example["text"] = tokenizer.apply_chat_template(
+        data["text"] = tokenizer.apply_chat_template(
             messages, tokenize=False, add_generation_prompt=True
         )
-        formatted_dataset.append(example)
+        formatted_dataset.append(data)
 
     return Dataset.from_list(formatted_dataset)
 
@@ -198,13 +198,13 @@ if __name__ == "__main__":
         output_dir=args.output_dir,
         num_train_epochs=args.num_epochs,
         per_device_train_batch_size=args.per_device_train_batch_size,
-        per_device_eval_batch_size=args.per_device_eval_batch_size if eval_dataset else None,
+        # per_device_eval_batch_size=args.per_device_eval_batch_size if eval_dataset else None,
         gradient_accumulation_steps=args.gradient_accumulation_steps,
         gradient_checkpointing=args.gradient_checkpointing,
         learning_rate=args.learning_rate,
         logging_steps=args.logging_steps,
         optim="adamw_torch",
-        evaluation_strategy="epoch" if eval_dataset else "no",
+        # evaluation_strategy="epoch" if eval_dataset else "no",
         save_strategy=args.save_strategy,
         save_steps=args.save_steps,
         save_total_limit=2,
@@ -220,7 +220,7 @@ if __name__ == "__main__":
     trainer = SFTTrainer(
         model=model,
         train_dataset=train_dataset,
-        eval_dataset=eval_dataset,
+        # eval_dataset=eval_dataset,
         dataset_text_field="text",
         data_collator=data_collator,
         packing=args.packing,
@@ -231,6 +231,7 @@ if __name__ == "__main__":
     )
 
     train_result = trainer.train()
+    trainer.save_model(args.output_dir)
     
     metrics = train_result.metrics
     trainer.log_metrics("train", metrics)
@@ -243,5 +244,3 @@ if __name__ == "__main__":
         trainer.tokenizer.push_to_hub(args.hf_hub_path)
     
     accelerator.wait_for_everyone()
-
-    trainer.save_model(args.output_dir)
