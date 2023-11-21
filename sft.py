@@ -168,7 +168,7 @@ if __name__ == "__main__":
     tokenizer.chat_template = "{% for message in messages %}\n{% if message['role'] == 'user' %}\n{{ '<|user|>\n' + message['content'] + eos_token }}\n{% elif message['role'] == 'system' %}\n{{ '<|system|>\n' + message['content'] + eos_token }}\n{% elif message['role'] == 'assistant' %}\n{{ '<|assistant|>\n'  + message['content'] + eos_token }}\n{% endif %}\n{% if loop.last and add_generation_prompt %}\n{{ '<|assistant|>' }}\n{% endif %}\n{% endfor %}"
 
     train_dataset = create_datasets(args.dataset_name, args.train_split)
-    eval_dataset = create_datasets(args.dataset_name, args.test_split)
+    # eval_dataset = create_datasets(args.dataset_name, args.test_split)
     
     train_dataset = train_dataset.map(apply_chat_template, fn_kwargs={"tokenizer": tokenizer, "task": "sft"})
     eval_dataset = eval_dataset.map(apply_chat_template, fn_kwargs={"tokenizer": tokenizer, "task": "sft"})
