@@ -187,6 +187,7 @@ if __name__ == "__main__":
     eval_dataset = create_datasets(args.dataset_name, args.test_split)
 
     train_dataset = apply_template(train_dataset, tokenizer)
+    eval_dataset = apply_template(eval_dataset, tokenizer)
     
     # train_dataset = train_dataset.map(apply_chat_template, fn_kwargs={"tokenizer": tokenizer, "task": "sft"})
     # eval_dataset = eval_dataset.map(apply_chat_template, fn_kwargs={"tokenizer": tokenizer, "task": "sft"})
