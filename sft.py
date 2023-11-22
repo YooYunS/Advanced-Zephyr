@@ -184,7 +184,7 @@ if __name__ == "__main__":
     tokenizer.chat_template = "{% for message in messages %}\n{% if message['role'] == 'user' %}\n{{ '<|user|>\n' + message['content'] + eos_token }}\n{% elif message['role'] == 'system' %}\n{{ '<|system|>\n' + message['content'] + eos_token }}\n{% elif message['role'] == 'assistant' %}\n{{ '<|assistant|>\n'  + message['content'] + eos_token }}\n{% endif %}\n{% if loop.last and add_generation_prompt %}\n{{ '<|assistant|>' }}\n{% endif %}\n{% endfor %}"
 
     train_dataset = create_datasets(args.dataset_name, args.train_split)
-    # eval_dataset = create_datasets(args.dataset_name, args.test_split)
+    eval_dataset = create_datasets(args.dataset_name, args.test_split)
 
     train_dataset = apply_template(train_dataset, tokenizer)
     
@@ -198,13 +198,13 @@ if __name__ == "__main__":
         output_dir=args.output_dir,
         num_train_epochs=args.num_epochs,
         per_device_train_batch_size=args.per_device_train_batch_size,
-        # per_device_eval_batch_size=args.per_device_eval_batch_size if eval_dataset else None,
+        per_device_eval_batch_size=args.per_device_eval_batch_size if eval_dataset else None,
         gradient_accumulation_steps=args.gradient_accumulation_steps,
         gradient_checkpointing=args.gradient_checkpointing,
         learning_rate=args.learning_rate,
         logging_steps=args.logging_steps,
         optim="adamw_torch",
-        # evaluation_strategy="epoch" if eval_dataset else "no",
+        evaluation_strategy="epoch" if eval_dataset else "no",
         save_strategy=args.save_strategy,
         save_steps=args.save_steps,
         save_total_limit=2,
@@ -220,7 +220,7 @@ if __name__ == "__main__":
     trainer = SFTTrainer(
         model=model,
         train_dataset=train_dataset,
-        # eval_dataset=eval_dataset,
+        eval_dataset=eval_dataset,
         dataset_text_field="text",
         data_collator=data_collator,
         packing=args.packing,
