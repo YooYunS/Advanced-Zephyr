@@ -7,3 +7,4 @@ bitsandbytes
 scipy
 flash_attn
 deepspeed
+wandb
