@@ -53,6 +53,9 @@ def arg_parse():
     parser.add_argument("--lr_scheduler_type", type=str, default="cosine")
     parser.add_argument("--warmup_ratio", type=float, default=0.1)
     parser.add_argument("--weight_decay", type=float, default=0)
+    
+    parser.add_argument("--wandb_project", type=str)
+    parser.add_argument("--wandb_run_name", type=str)
 
     parser.add_argument(
         "--output_dir",
@@ -157,17 +160,26 @@ def create_datasets(dataset_name, split):
 if __name__ == "__main__":
     set_seed(42)
     args = arg_parse()
+    
+    huggingface_hub.login(args.hf_token)
 
-    accelerator = Accelerator()
+    peft_config = LoraConfig(
+        r=args.lora_r,
+        lora_alpha=args.lora_alpha,
+        lora_dropout=args.lora_dropout,
+        target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "fc_in", "fc_out", "wte", "gate_proj", "down_proj", "up_proj"],
+        bias="none",
+        task_type="CAUSAL_LM"
+    )
 
     model = AutoModelForCausalLM.from_pretrained(
         args.model_name,
-        # device_map={"": Accelerator().process_index},    # unavailable in deepspeed
+        device_map={"": Accelerator().process_index},    # unavailable in deepspeed
         trust_remote_code=True,
         torch_dtype=torch.bfloat16,
+        use_cache=not args.gradient_checkpointing,
         use_flash_attention_2=args.use_flash_attention,
     )
-    model.config.use_cache = False
     model.enable_input_require_grads()
     
     tokenizer = AutoTokenizer.from_pretrained(
@@ -186,11 +198,12 @@ if __name__ == "__main__":
     train_dataset = create_datasets(args.dataset_name, args.train_split)
     eval_dataset = create_datasets(args.dataset_name, args.test_split)
 
-    train_dataset = apply_template(train_dataset, tokenizer)
-    eval_dataset = apply_template(eval_dataset, tokenizer)
-    
-    # train_dataset = train_dataset.map(apply_chat_template, fn_kwargs={"tokenizer": tokenizer, "task": "sft"})
-    # eval_dataset = eval_dataset.map(apply_chat_template, fn_kwargs={"tokenizer": tokenizer, "task": "sft"})
+    # train_dataset = apply_template(train_dataset, tokenizer)
+    # eval_dataset = apply_template(eval_dataset, tokenizer)
+
+    original_columns = train_dataset.column_names
+    train_dataset = train_dataset.map(apply_chat_template, remove_columns=original_columns, fn_kwargs={"tokenizer": tokenizer, "task": "sft"})
+    eval_dataset = eval_dataset.map(apply_chat_template, remove_columns=original_columns, fn_kwargs={"tokenizer": tokenizer, "task": "sft"})
 
     print(f"Size of the train set: {len(train_dataset)}.")
     # print(f"Size of the train set: {len(train_dataset)}. Size of the validation set: {len(eval_dataset)}")
@@ -204,7 +217,7 @@ if __name__ == "__main__":
         gradient_checkpointing=args.gradient_checkpointing,
         learning_rate=args.learning_rate,
         logging_steps=args.logging_steps,
-        optim="adamw_torch",
+        # optim="adamw_torch",
         evaluation_strategy="epoch" if eval_dataset else "no",
         save_strategy=args.save_strategy,
         save_steps=args.save_steps,
@@ -214,12 +227,15 @@ if __name__ == "__main__":
         warmup_ratio=args.warmup_ratio,
         bf16=args.bf16,  # True
         remove_unused_columns=False,
+        report_to="wandb" if use_wandb else None,
+        run_name=args.wandb_run_name if use_wandb else None,
     )
 
     data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False)
 
     trainer = SFTTrainer(
         model=model,
+        peft_config=peft_config,
         train_dataset=train_dataset,
         eval_dataset=eval_dataset,
         dataset_text_field="text",
@@ -231,17 +247,19 @@ if __name__ == "__main__":
         args=training_args,
     )
 
-    train_result = trainer.train()
-    trainer.save_model(args.output_dir)
-    
-    metrics = train_result.metrics
-    trainer.log_metrics("train", metrics)
+    trainer.train()
 
-    if trainer.is_fsdp_enabled:
-        trainer.accelerator.state.fsdp_plugin.set_state_dict_type("FULL_STATE_DICT")
+    trainer.model.save_pretrained(args.output_dir)
 
-    if accelerator.is_main_process:
-        trainer.model.push_to_hub(args.hf_hub_path)
-        trainer.tokenizer.push_to_hub(args.hf_hub_path)
+    del base_model
+    torch.cuda.empty_cache()
     
-    accelerator.wait_for_everyone()
+    model = AutoPeftModelForCausalLM.from_pretrained(args.output_dir, device_map="auto", torch_dtype=torch.bfloat16)
+    model = model.merge_and_unload()
+
+    if args.hf_hub_path:
+        model.push_to_hub(args.hf_hub_path)
+        tokenizer.push_to_hub(args.hf_hub_path)
+    else:
+        model.save_pretrained(args.output_dir)
+        tokenizer.save_pretrained(args.output_dir)
