@@ -196,6 +196,13 @@ if __name__ == "__main__":
     tokenizer.padding_side = "right"
     tokenizer.chat_template = "{% for message in messages %}\n{% if message['role'] == 'user' %}\n{{ '<|user|>\n' + message['content'] + eos_token }}\n{% elif message['role'] == 'system' %}\n{{ '<|system|>\n' + message['content'] + eos_token }}\n{% elif message['role'] == 'assistant' %}\n{{ '<|assistant|>\n'  + message['content'] + eos_token }}\n{% endif %}\n{% if loop.last and add_generation_prompt %}\n{{ '<|assistant|>' }}\n{% endif %}\n{% endfor %}"
 
+    use_wandb = len(args.wandb_project) > 0 or (
+        "WANDB_PROJECT" in os.environ and len(os.environ["WANDB_PROJECT"]) > 0
+    )
+    # Only overwrite environ if wandb param passed
+    if len(args.wandb_project) > 0:
+        os.environ["WANDB_PROJECT"] = args.wandb_project
+    
     train_dataset = create_datasets(args.dataset_name, args.train_split)
     eval_dataset = create_datasets(args.dataset_name, args.test_split)
 
