@@ -259,7 +259,7 @@ if __name__ == "__main__":
 
     trainer.model.save_pretrained(args.output_dir)
 
-    del base_model
+    del model
     torch.cuda.empty_cache()
     
     model = AutoPeftModelForCausalLM.from_pretrained(args.output_dir, device_map="auto", torch_dtype=torch.bfloat16)
