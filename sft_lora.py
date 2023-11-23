@@ -175,11 +175,11 @@ if __name__ == "__main__":
 
     model = AutoModelForCausalLM.from_pretrained(
         args.model_name,
-        device_map={"": Accelerator().process_index},    # unavailable in deepspeed
+        # device_map={"": Accelerator().process_index},    # unavailable in deepspeed
         trust_remote_code=True,
         torch_dtype=torch.bfloat16,
         use_cache=not args.gradient_checkpointing,
-        use_flash_attention_2=args.use_flash_attention,
+        # use_flash_attention_2=args.use_flash_attention,
     )
     model.enable_input_require_grads()
     if args.gradient_checkpointing:
@@ -215,8 +215,8 @@ if __name__ == "__main__":
     train_dataset = train_dataset.map(apply_chat_template, remove_columns=original_columns, fn_kwargs={"tokenizer": tokenizer, "task": "sft"})
     eval_dataset = eval_dataset.map(apply_chat_template, remove_columns=original_columns, fn_kwargs={"tokenizer": tokenizer, "task": "sft"})
 
-    print(f"Size of the train set: {len(train_dataset)}.")
-    # print(f"Size of the train set: {len(train_dataset)}. Size of the validation set: {len(eval_dataset)}")
+    # print(f"Size of the train set: {len(train_dataset)}.")
+    print(f"Size of the train set: {len(train_dataset)}. Size of the validation set: {len(eval_dataset)}")
 
     training_args = TrainingArguments(
         output_dir=args.output_dir,
