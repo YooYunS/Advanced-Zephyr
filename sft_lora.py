@@ -7,6 +7,7 @@ from transformers import (
     DataCollatorForLanguageModeling,
     set_seed
 )
+from peft import LoraConfig, AutoPeftModelForCausalLM
 from accelerate import Accelerator
 from datasets import load_dataset, Dataset
 import huggingface_hub
