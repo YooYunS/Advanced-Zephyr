@@ -182,6 +182,8 @@ if __name__ == "__main__":
         use_flash_attention_2=args.use_flash_attention,
     )
     model.enable_input_require_grads()
+    if args.gradient_checkpointing:
+        base_model.gradient_checkpointing_enable()
     
     tokenizer = AutoTokenizer.from_pretrained(
         args.model_name,
