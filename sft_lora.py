@@ -191,7 +191,7 @@ if __name__ == "__main__":
         trust_remote_code=True,
         torch_dtype=torch.bfloat16,
         use_cache=not args.gradient_checkpointing,
-        # use_flash_attention_2=args.use_flash_attention,
+        use_flash_attention_2=args.use_flash_attention,
     )
     model.enable_input_require_grads()
     
