@@ -170,7 +170,8 @@ if __name__ == "__main__":
         device_map = {"": int(os.environ.get("LOCAL_RANK") or 0)}
         gradient_accumulation_steps = args.gradient_accumulation_steps // world_size
         print("gradient_accumulation_steps: ", gradient_accumulation_steps)
-    else gradient_accumulation_steps = args.gradient_accumulation_steps
+    else:
+        gradient_accumulation_steps = args.gradient_accumulation_steps
     
     huggingface_hub.login(args.hf_token)
 
