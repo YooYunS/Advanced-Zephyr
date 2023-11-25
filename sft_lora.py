@@ -166,12 +166,12 @@ if __name__ == "__main__":
     world_size = int(os.environ.get("WORLD_SIZE", 1))
     ddp = world_size != 1
 
-    if ddp:
-        device_map = {"": int(os.environ.get("LOCAL_RANK") or 0)}
-        gradient_accumulation_steps = args.gradient_accumulation_steps // world_size
-        print("gradient_accumulation_steps: ", gradient_accumulation_steps)
-    else:
-        gradient_accumulation_steps = args.gradient_accumulation_steps
+    # if ddp:
+    #     device_map = {"": int(os.environ.get("LOCAL_RANK") or 0)}
+    #     gradient_accumulation_steps = args.gradient_accumulation_steps // world_size
+    #     print("gradient_accumulation_steps: ", gradient_accumulation_steps)
+    # else:
+    #     gradient_accumulation_steps = args.gradient_accumulation_steps
     
     huggingface_hub.login(args.hf_token)
 
@@ -197,10 +197,10 @@ if __name__ == "__main__":
     if args.gradient_checkpointing:
         model.gradient_checkpointing_enable()
 
-    if not ddp and torch.cuda.device_count() > 1:
-        # keeps Trainer from trying its own DataParallelism when more than 1 gpu is available
-        model.is_parallelizable = True
-        model.model_parallel = True
+    # if not ddp and torch.cuda.device_count() > 1:
+    #     # keeps Trainer from trying its own DataParallelism when more than 1 gpu is available
+    #     model.is_parallelizable = True
+    #     model.model_parallel = True
     
     tokenizer = AutoTokenizer.from_pretrained(
         args.model_name,
@@ -240,7 +240,7 @@ if __name__ == "__main__":
         num_train_epochs=args.num_epochs,
         per_device_train_batch_size=args.per_device_train_batch_size,
         per_device_eval_batch_size=args.per_device_eval_batch_size if eval_dataset else None,
-        gradient_accumulation_steps=gradient_accumulation_steps,
+        gradient_accumulation_steps=args.gradient_accumulation_steps,
         gradient_checkpointing=args.gradient_checkpointing,
         learning_rate=args.learning_rate,
         logging_steps=args.logging_steps,
