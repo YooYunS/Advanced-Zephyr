@@ -194,6 +194,7 @@ if __name__ == "__main__":
         use_flash_attention_2=args.use_flash_attention,
     )
     model.enable_input_require_grads()
+    model.to('cuda')
     
     if args.gradient_checkpointing:
         model.gradient_checkpointing_enable()
