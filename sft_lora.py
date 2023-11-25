@@ -208,12 +208,12 @@ if __name__ == "__main__":
     train_dataset = create_datasets(args.dataset_name, args.train_split)
     eval_dataset = create_datasets(args.dataset_name, args.test_split)
 
-    # train_dataset = apply_template(train_dataset, tokenizer)
-    # eval_dataset = apply_template(eval_dataset, tokenizer)
+    train_dataset = apply_template(train_dataset, tokenizer)
+    eval_dataset = apply_template(eval_dataset, tokenizer)
 
-    original_columns = train_dataset.column_names
-    train_dataset = train_dataset.map(apply_chat_template, remove_columns=original_columns, fn_kwargs={"tokenizer": tokenizer, "task": "sft"})
-    eval_dataset = eval_dataset.map(apply_chat_template, remove_columns=original_columns, fn_kwargs={"tokenizer": tokenizer, "task": "sft"})
+    # original_columns = train_dataset.column_names
+    # train_dataset = train_dataset.map(apply_chat_template, remove_columns=original_columns, fn_kwargs={"tokenizer": tokenizer, "task": "sft"})
+    # eval_dataset = eval_dataset.map(apply_chat_template, remove_columns=original_columns, fn_kwargs={"tokenizer": tokenizer, "task": "sft"})
 
     # print(f"Size of the train set: {len(train_dataset)}.")
     print(f"Size of the train set: {len(train_dataset)}. Size of the validation set: {len(eval_dataset)}")
