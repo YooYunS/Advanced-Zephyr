@@ -179,7 +179,8 @@ if __name__ == "__main__":
         r=args.lora_r,
         lora_alpha=args.lora_alpha,
         lora_dropout=args.lora_dropout,
-        target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "fc_in", "fc_out", "wte", "gate_proj", "down_proj", "up_proj"],
+        # target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "fc_in", "fc_out", "wte", "gate_proj", "down_proj", "up_proj"],
+        target_modules=["gate_proj", "down_proj", "up_proj"],
         bias="none",
         task_type="CAUSAL_LM"
     )
