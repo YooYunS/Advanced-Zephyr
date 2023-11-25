@@ -42,7 +42,7 @@ def arg_parse():
     parser.add_argument("--per_device_train_batch_size", type=int, default=32)
     parser.add_argument("--per_device_eval_batch_size", type=int, default=16)
     parser.add_argument("--group_by_length", type=bool, default=False)
-    parser.add_argument("--packing", type=bool, default=True)
+    parser.add_argument("--packing", type=bool, default=False)
     parser.add_argument("--use_flash_attention", type=bool, default=True)
     parser.add_argument("--bf16", type=bool, default=True)
 
